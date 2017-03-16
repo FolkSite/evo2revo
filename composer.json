@@ -1,0 +1,15 @@
+{
+    "name": "mishantrop/evo2revo",
+    "description": "MODX Evolution to MODX Revolution",
+    "type": "project",
+    "require": {
+        "monolog/monolog": "^1.22"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "mishantrop",
+            "email": "quasi-art@ya.ru"
+        }
+    ]
+}

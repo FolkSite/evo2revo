@@ -2,20 +2,27 @@
 /**
  * https://quasi-art.ru/
  */
+ 
+require __DIR__ . '/vendor/autoload.php';
+$log = new Monolog\Logger('name');
+$log->pushHandler(new Monolog\Handler\StreamHandler('logs/log-'.date('Y-m-d').'.php', Monolog\Logger::WARNING));
+
+
 header('Content-Type: text/html; charset=utf-8');
 error_reporting(1);
 
 $config = [
-    'database' => 'rp',
-    'password' => '',
-    'username' => 'root',
-    'prefix_from' => 'modx_',
-    'prefix_to' => 'rp_',
+    'database' => 'test',
+    'password' => 'test',
+    'username' => 'test',
+    'prefix_from' => 'modxevo_',
+    'prefix_to' => 'modxrevo_',
     'port_content' => true,
     'port_htmlsnippets' => true,
     'port_templates' => true,
     'port_tv' => true,
 ];
+
 $truncateQueries = [
     'TRUNCATE  `'.$config['prefix_to'].'site_content`',
     'TRUNCATE  `'.$config['prefix_to'].'site_htmlsnippets`',
@@ -82,22 +89,21 @@ function processLinkTags($content, $count = 2000) {
 /**
  * Функция
  */
-function pdoSet($fields, &$values, $source = array()) {
+function pdoSet($fields, &$values, $source = []) {
   $set = '';
-  $values = array();
+  $values = [];
   foreach ($fields as $field) {
     if (isset($source[$field])) {
       $set.="`".str_replace("`","``",$field)."`". "=:$field, ";
       $values[$field] = $source[$field];
     }
   }
-  return substr($set, 0, -2); 
+  return substr($set, 0, -2);
 }
 
 try {
     $db = new PDO("mysql:dbname=".$config['database'].";charset=utf8;host=localhost", $config['username'], $config['password']);
-    echo 'PDO connection object created<br><br>';
-    
+
     foreach ($truncateQueries as $sql) {
         $db->query($sql);
     }
@@ -122,29 +128,29 @@ try {
 
     /**
      * TV Values
-     */ 
+     */
     $sql = 'SELECT * FROM `'.$config['prefix_from'].'site_tmplvar_contentvalues` ORDER BY `id` ';
     $tvvalues = $db->query($sql);
 
     /**
      * TV to Templates
-     */ 
+     */
     $sql = 'SELECT * FROM `'.$config['prefix_from'].'site_tmplvar_templates` ORDER BY `id` ';
     $tvtemplates = $db->query($sql);
     
     /**
      * TV
-     */ 
+     */
     $sql = 'SELECT * FROM `'.$config['prefix_from'].'site_tmplvars` ORDER BY `id` ';
     $tvs = $db->query($sql);
 
     /**
      * Перенос ресурсов
      */
-    $items = array();
+    $items = [];
     foreach ($contents as $row)
     {
-        $item = array(
+        $item = [
             'id' => $row['id'],
             'type' => $row['type'],
             'contentType' => $row['contentType'],
@@ -177,13 +183,13 @@ try {
             'hidemenu' => $row['hidemenu'],
             'class_key' => 'modDocument',
             'context_key' => 'web',
-        );
+        ];
         $item['content'] = processLinkTags($item['content'], count($items));
         $items[] = $item;
     }
     foreach ($items as &$item) {
-        $fields = array();
-        $value = array();
+        $fields = [];
+        $value = [];
 
         foreach ($item as $field => $value) {
             $fields[] = $field;
@@ -199,7 +205,7 @@ try {
     /**
      * Перенос чанков
      */
-    $items = array();
+    $items = [];
     foreach ($chunks as $row)
     {
         $item = array(
@@ -214,8 +220,8 @@ try {
         $items[] = $item;
     }
     foreach ($items as &$item) {
-        $fields = array();
-        $value = array();
+        $fields = [];
+        $value = [];
 
         foreach ($item as $field => $value) {
             $fields[] = $field;
@@ -231,7 +237,7 @@ try {
     /**
      * Перенос шаблонов
      */
-    $items = array();
+    $items = [];
     foreach ($templates as $row)
     {
         $item = array(
@@ -244,8 +250,8 @@ try {
         $items[] = $item;
     }
     foreach ($items as &$item) {
-        $fields = array();
-        $value = array();
+        $fields = [];
+        $value = [];
 
         foreach ($item as $field => $value) {
             $fields[] = $field;
@@ -261,7 +267,7 @@ try {
     /**
      * Перенос значений переменных шаблона
      */
-    $items = array();
+    $items = [];
     foreach ($tvvalues as $row)
     {
         $item = array(
@@ -274,8 +280,8 @@ try {
         $items[] = $item;
     }
     foreach ($items as &$item) {
-        $fields = array();
-        $value = array();
+        $fields = [];
+        $value = [];
 
         foreach ($item as $field => $value) {
             $fields[] = $field;
@@ -291,7 +297,7 @@ try {
     /**
      * Перенос отшений TV к шаблонам
      */
-    $items = array();
+    $items = [];
     foreach ($tvtemplates as $row)
     {
         $item = array(
@@ -303,8 +309,8 @@ try {
         $items[] = $item;
     }
     foreach ($items as &$item) {
-        $fields = array();
-        $value = array();
+        $fields = [];
+        $value = [];
 
         foreach ($item as $field => $value) {
             $fields[] = $field;
@@ -320,7 +326,7 @@ try {
     /**
      * Перенос переменных шаблона
      */
-    $items = array();
+    $items = [];
     foreach ($tvs as $row)
     {
         $item = array(
@@ -349,8 +355,8 @@ try {
     }
 
     foreach ($items as $item) {
-        $fields = array();
-        $value = array();
+        $fields = [];
+        $value = [];
 
         foreach ($item as $field => $value) {
             $fields[] = $field;
@@ -364,4 +370,5 @@ try {
     }
 } catch(PDOException $e) {
     echo $e->getMessage();
+	$log->addWarning($e->getMessage());
 }

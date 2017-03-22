@@ -7,16 +7,19 @@ require __DIR__ . '/vendor/autoload.php';
 $log = new Monolog\Logger('name');
 $log->pushHandler(new Monolog\Handler\StreamHandler('logs/log-'.date('Y-m-d').'.php', Monolog\Logger::WARNING));
 
-
 header('Content-Type: text/html; charset=utf-8');
 error_reporting(1);
+
+class Evo2Revo {
+	public function
+}
 
 $config = [
     'database' => 'test',
     'password' => 'test',
     'username' => 'test',
-    'prefix_from' => 'modxevo_',
-    'prefix_to' => 'modxrevo_',
+    'prefix_from' => 'modxevo_', // prefix for Evolution tables
+    'prefix_to' => 'modxrevo_', // prefix for Revolution tables
     'port_content' => true,
     'port_htmlsnippets' => true,
     'port_templates' => true,
@@ -73,7 +76,10 @@ function processTags($content) {
 }
 
 /**
- * Обработка тегов для ссылок
+ * Обработка тегов ссылок внутри необработанного содержимого ресурса
+ * @param string $content Содержимое
+ * @param integer $count Максимальный идентификатор ресурса. Например, если на сайте 100 ресурсов, то $count = 100 будет достаточно
+ * @return string $content Обработанное содержимое ресурса
  */
 function processLinkTags($content, $count = 2000) {
     $count = (int)$count;
@@ -208,14 +214,12 @@ try {
     $items = [];
     foreach ($chunks as $row)
     {
-        $item = array(
+        $item = [
             'id' => $row['id'],
             'name' => $row['name'],
             'description' => $row['description'],
             'snippet' => processTags($row['snippet']),
-
-
-        );
+        ];
         $item['snippet'] = processLinkTags($item['snippet'], count($items));
         $items[] = $item;
     }
@@ -240,12 +244,12 @@ try {
     $items = [];
     foreach ($templates as $row)
     {
-        $item = array(
+        $item = [
             'id' => $row['id'],
             'templatename' => $row['templatename'],
             'description' => $row['description'],
             'content' => processTags($row['content']),
-        );
+        ];
         $item['content'] = processLinkTags($item['content'], count($items));
         $items[] = $item;
     }
@@ -270,13 +274,12 @@ try {
     $items = [];
     foreach ($tvvalues as $row)
     {
-        $item = array(
+        $item = [
             'id' => $row['id'],
             'tmplvarid' => $row['tmplvarid'],
             'contentid' => $row['contentid'],
             'value' => $row['value'],
-        );
-        
+        ];
         $items[] = $item;
     }
     foreach ($items as &$item) {
@@ -300,11 +303,11 @@ try {
     $items = [];
     foreach ($tvtemplates as $row)
     {
-        $item = array(
+        $item = [
             'tmplvarid' => $row['tmplvarid'],
             'templateid' => $row['templateid'],
             'rank' => $row['rank'],
-        );
+        ];
         
         $items[] = $item;
     }
@@ -329,7 +332,7 @@ try {
     $items = [];
     foreach ($tvs as $row)
     {
-        $item = array(
+        $item = [
             'id' => $row['id'],
             'type' => $row['type'],
             'name' => $row['name'],
@@ -341,7 +344,7 @@ try {
             'properties' => 'a:0:{}',
             'input_properties' => 'a:0:{}',
             'output_properties' => 'a:0:{}',
-        );
+        ];
         switch ($row['type']) {
             case 'dropdown':
                 $item['type'] = 'listbox';
